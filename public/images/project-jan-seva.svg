@@ -1,0 +1,19 @@
+<svg width="1200" height="700" viewBox="0 0 1200 700" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="700" fill="url(#paint0_linear_1_2)"/>
+  <circle cx="170" cy="550" r="120" fill="#22D3EE" fill-opacity="0.35"/>
+  <circle cx="1010" cy="180" r="160" fill="#8B5CF6" fill-opacity="0.3"/>
+  <rect x="110" y="120" width="980" height="440" rx="36" fill="#0F172A" fill-opacity="0.7" stroke="#67E8F9" stroke-opacity="0.35"/>
+  <path d="M180 470C330 350 420 310 560 320C670 330 715 395 820 370C905 350 945 280 1015 240" stroke="#67E8F9" stroke-width="10" stroke-linecap="round"/>
+  <circle cx="180" cy="470" r="22" fill="#67E8F9"/>
+  <circle cx="560" cy="320" r="22" fill="#C084FC"/>
+  <circle cx="820" cy="370" r="22" fill="#22D3EE"/>
+  <circle cx="1015" cy="240" r="22" fill="#8B5CF6"/>
+  <text x="600" y="70" text-anchor="middle" fill="#E2E8F0" font-family="Arial, sans-serif" font-size="48" font-weight="700">JAN SEVA</text>
+  <text x="600" y="610" text-anchor="middle" fill="#BFDBFE" font-family="Arial, sans-serif" font-size="28">Citizen Grievance System</text>
+  <defs>
+    <linearGradient id="paint0_linear_1_2" x1="0" y1="0" x2="1200" y2="700" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#020617"/>
+      <stop offset="1" stop-color="#111827"/>
+    </linearGradient>
+  </defs>
+</svg>

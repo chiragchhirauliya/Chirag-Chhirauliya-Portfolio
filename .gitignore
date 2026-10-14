@@ -1,0 +1,37 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+.env
+.env.*
+!.env.example
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Built assets and runtime data
+public/resume/*.pdf
+public/images/*.jpg
+public/images/*.png
+public/images/*.svg
+!public/images/project-jan-seva.svg
+!public/images/project-gram-mitra.svg
+!public/images/project-web-ui.svg
+!public/images/profile.jpg

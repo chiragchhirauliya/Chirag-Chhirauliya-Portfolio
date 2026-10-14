@@ -1,0 +1,18 @@
+<svg width="1200" height="700" viewBox="0 0 1200 700" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="700" fill="url(#paint0_linear_1_2)"/>
+  <circle cx="240" cy="180" r="180" fill="#A78BFA" fill-opacity="0.25"/>
+  <circle cx="920" cy="520" r="190" fill="#22C55E" fill-opacity="0.22"/>
+  <rect x="150" y="160" width="900" height="360" rx="40" fill="#0F172A" fill-opacity="0.75" stroke="#A78BFA" stroke-opacity="0.4"/>
+  <rect x="250" y="260" width="270" height="120" rx="24" fill="#111827" stroke="#C4B5FD" stroke-opacity="0.5"/>
+  <rect x="580" y="260" width="270" height="120" rx="24" fill="#111827" stroke="#86EFAC" stroke-opacity="0.5"/>
+  <path d="M310 330H470" stroke="#C4B5FD" stroke-width="10" stroke-linecap="round"/>
+  <path d="M640 330H820" stroke="#86EFAC" stroke-width="10" stroke-linecap="round"/>
+  <text x="600" y="120" text-anchor="middle" fill="#E2E8F0" font-family="Arial, sans-serif" font-size="52" font-weight="700">Gram Mitra</text>
+  <text x="600" y="590" text-anchor="middle" fill="#E9D5FF" font-family="Arial, sans-serif" font-size="30">Community and public support platform</text>
+  <defs>
+    <linearGradient id="paint0_linear_1_2" x1="0" y1="0" x2="1200" y2="700" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0F172A"/>
+      <stop offset="1" stop-color="#111827"/>
+    </linearGradient>
+  </defs>
+</svg>
