@@ -126,6 +126,37 @@ describe('App', () => {
     expect(experienceCards[3]).toHaveTextContent('Participated in organizing educational programs.')
   })
 
+  it('integrates supplied certificates into the matching existing cards', () => {
+    render(<App />)
+
+    const certificateUrls = {
+      sih: 'https://drive.google.com/file/d/1VSn_jiNjHsEkiepfDeWeS9Bmo4OSP_q5/view?usp=drivesdk',
+      bgi: 'https://drive.google.com/file/d/1NkN2oA39-nnEN62jtP7UYkuZYSELQFd0/view?usp=drivesdk',
+      apex: 'https://drive.google.com/file/d/1fiS0uAPl7P4n5CgqUDvRWO5NnN3tb0Ji/view?usp=drivesdk',
+      python: 'https://drive.google.com/file/d/1lDiQOTb4uhY3bRqIEsfVYSXbgZ-Oh25J/view?usp=drivesdk',
+      javascript: 'https://drive.google.com/file/d/1daiQk76yqvNgbMIFsIucYfSa-BD8UDSk/view?usp=drivesdk',
+    }
+    const experienceCards = [...document.querySelectorAll('#experience article')]
+    const cardForTitle = (title: string) =>
+      experienceCards.find((card) => card.querySelector('h3')?.textContent === title)
+
+    expect(cardForTitle('Smart India Hackathon (SIH)')?.querySelector('a')).toHaveAttribute('href', certificateUrls.sih)
+    expect(cardForTitle('BGI Hackathon')?.querySelector('a')).toHaveAttribute('href', certificateUrls.bgi)
+    expect(cardForTitle('Web Development Intern')?.querySelector('a')).toHaveAttribute('href', certificateUrls.apex)
+
+    const skillLinks = [...document.querySelectorAll('#skills a')]
+    expect(skillLinks.map((link) => link.getAttribute('href'))).toEqual([certificateUrls.python, certificateUrls.javascript])
+    expect([...document.querySelectorAll('a[rel="noopener noreferrer"][target="_blank"]')]).toHaveLength(5)
+
+    const educationCards = [...document.querySelectorAll('#education article')]
+    expect(educationCards).toHaveLength(3)
+    educationCards.forEach((card) => expect(card).toHaveTextContent('Certificate Not Provided'))
+    expect(document.querySelector('#skills')).toHaveTextContent('Certificate Not Provided')
+    expect(document.querySelectorAll('#skills').length).toBe(1)
+    expect(document.querySelector('#certificates')).toBeNull()
+    expect(screen.getAllByRole('link', { name: 'View Certificate ↗' })).toHaveLength(5)
+  })
+
   it('uses the profile image in the navbar and hero, but not in About', () => {
     render(<App />)
 

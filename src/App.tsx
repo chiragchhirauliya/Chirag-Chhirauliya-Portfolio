@@ -1,4 +1,4 @@
-import { AnimatePresence, MotionConfig, motion, useReducedMotion } from 'framer-motion'
+import { AnimatePresence, MotionConfig, motion, useReducedMotion, useScroll, useTransform } from 'framer-motion'
 import {
   ArrowRight,
   ArrowUpCircle,
@@ -23,7 +23,7 @@ import {
   X,
 } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { achievements, education, experiences, navItems, profile, projects, skillGroups, socialLinks } from './data/profile'
+import { achievements, education, experiences, navItems, profile, projects, skillCertificates, skillGroups, socialLinks } from './data/profile'
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api'
 const localResumeUrl = profile.resumeLocal
@@ -50,6 +50,33 @@ const revealUp = {
   whileInView: { opacity: 1, y: 0 },
   viewport: { once: true, amount: 0.2 },
   transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] as const },
+}
+
+const heroContainerVariants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.11, delayChildren: 0.08 } },
+}
+
+const heroItemVariants = {
+  hidden: { opacity: 0, y: 18 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.48, ease: [0.22, 1, 0.36, 1] as const } },
+}
+
+function CertificateAction({ url }: { url?: string }) {
+  if (!url) {
+    return <span className="text-xs font-medium text-slate-400">Certificate Not Provided</span>
+  }
+
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex min-h-10 items-center justify-center rounded-lg border border-cyan-400/30 bg-cyan-500/10 px-3 py-2 text-xs font-semibold text-cyan-200 transition-colors duration-200 hover:border-cyan-300/60 hover:bg-cyan-500/15 hover:text-cyan-100"
+    >
+      View Certificate ↗
+    </a>
+  )
 }
 
 function NeonCursor() {
@@ -192,11 +219,41 @@ function App() {
     subject: '',
     message: '',
   })
+  const [isScrolled, setIsScrolled] = useState(false)
+  const [activeSection, setActiveSection] = useState('home')
+  const heroRef = useRef<HTMLElement>(null)
+  const { scrollYProgress: heroScrollProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] })
+  const heroParallaxY = useTransform(heroScrollProgress, [0, 1], [0, 24])
 
   const filteredProjects = useMemo(() => {
     if (projectFilter === 'All') return projects
     return projects.filter((project) => project.stack.includes(projectFilter))
   }, [projectFilter])
+
+  useEffect(() => {
+    const updateScrollState = () => setIsScrolled(window.scrollY > 12)
+    updateScrollState()
+    window.addEventListener('scroll', updateScrollState, { passive: true })
+
+    const sectionObserver = typeof IntersectionObserver === 'undefined'
+      ? null
+      : new IntersectionObserver((entries) => {
+          const visibleSections = entries
+            .filter((entry) => entry.isIntersecting)
+            .sort((first, second) => second.intersectionRatio - first.intersectionRatio)
+          if (visibleSections[0]) setActiveSection(visibleSections[0].target.id)
+        }, { rootMargin: '-18% 0px -62% 0px', threshold: [0, 0.1, 0.3] })
+
+    navItems.forEach((item) => {
+      const section = document.querySelector(item.href)
+      if (section) sectionObserver?.observe(section)
+    })
+
+    return () => {
+      window.removeEventListener('scroll', updateScrollState)
+      sectionObserver?.disconnect()
+    }
+  }, [])
 
   const handleInputChange = (field: string, value: string) => {
     setFormValues((current) => ({ ...current, [field]: value }))
@@ -267,7 +324,7 @@ function App() {
   return (
     <MotionConfig reducedMotion="user">
     <div className="portfolio-shell min-h-screen overflow-x-hidden">
-      <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/75 shadow-[0_10px_30px_rgba(2,6,23,0.7)] backdrop-blur-2xl">
+      <header data-scrolled={isScrolled} className="site-header sticky top-0 z-50 border-b border-white/10 bg-slate-950/75 shadow-[0_10px_30px_rgba(2,6,23,0.7)] backdrop-blur-2xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
           <motion.button
             initial={{ opacity: 0, y: -6 }}
@@ -293,6 +350,7 @@ function App() {
                 whileTap={{ scale: 0.98 }}
                 type="button"
                 onClick={() => sectionInView(item.href.replace('#', ''))}
+                aria-current={activeSection === item.href.slice(1) ? 'location' : undefined}
                 className="nav-link text-sm text-slate-300 transition hover:text-white"
               >
                 {item.label}
@@ -376,39 +434,40 @@ function App() {
       </header>
 
       <main>
-        <section id="home" className="relative z-10 overflow-hidden">
-          <div className="relative mx-auto grid max-w-7xl gap-14 px-4 py-16 sm:px-6 lg:grid-cols-[1.12fr_0.88fr] lg:px-8 lg:py-24">
-            <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="flex flex-col justify-center">
-              <div className="mb-6 inline-flex w-max items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-500/10 px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.28em] text-cyan-200 shadow-[0_0_25px_rgba(34,211,238,0.18)]">
+        <section ref={heroRef} id="home" className="relative z-10 overflow-hidden">
+          <motion.div aria-hidden="true" className="hero-ambient-light" style={{ y: heroParallaxY }} />
+          <div className="relative mx-auto grid min-w-0 max-w-7xl gap-14 px-4 py-16 sm:px-6 lg:grid-cols-[1.12fr_0.88fr] lg:px-8 lg:py-24">
+            <motion.div variants={heroContainerVariants} initial="hidden" animate="visible" className="flex min-w-0 flex-col justify-center">
+              <motion.div variants={heroItemVariants} className="mb-6 inline-flex w-max items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-500/10 px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.28em] text-cyan-200 shadow-[0_0_25px_rgba(34,211,238,0.18)]">
                 <Sparkles size={12} />
                 Creative Developer • Student • Problem Solver
-              </div>
+              </motion.div>
 
-              <h1 className="max-w-xl text-4xl font-black tracking-[-0.05em] text-white sm:text-5xl lg:text-7xl">
+              <motion.h1 variants={heroItemVariants} className="hero-title max-w-xl text-4xl font-black tracking-[-0.05em] text-white sm:text-5xl lg:text-7xl">
                 Hi, I&apos;m <span className="gradient-text">Chirag Chhirauliya</span>
                 <span className="mt-3 block text-3xl sm:text-4xl lg:text-6xl">
                   Building <span className="gradient-text">digital ideas</span> that feel alive.
                 </span>
-              </h1>
+              </motion.h1>
 
-              <p className="mt-5 max-w-xl text-lg font-medium text-sky-200">{profile.title}</p>
+              <motion.p variants={heroItemVariants} className="hero-role-reveal mt-5 max-w-xl text-lg font-medium text-sky-200">{profile.title}</motion.p>
 
-              <p className="mt-5 max-w-xl text-base leading-8 text-slate-300">
+              <motion.p variants={heroItemVariants} className="mt-5 max-w-xl text-base leading-8 text-slate-300">
                 {profile.bio}
-              </p>
+              </motion.p>
 
-              <div className="mt-8 flex flex-wrap items-center gap-3">
-                <button type="button" onClick={() => sectionInView('projects')} className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-cyan-500 to-violet-600 px-5 py-3 font-semibold text-white shadow-[0_15px_40px_rgba(59,130,246,0.35)] transition">
+              <motion.div variants={heroItemVariants} className="mt-8 flex flex-wrap items-center gap-3">
+                <motion.button type="button" onClick={() => sectionInView('projects')} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="primary-cta inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-cyan-500 to-violet-600 px-5 py-3 font-semibold text-white shadow-[0_15px_40px_rgba(59,130,246,0.35)] transition">
                   View My Projects
                   <ArrowRight size={16} />
-                </button>
+                </motion.button>
                 <a href={localResumeUrl} download="Chirag-Chhirauliya-Resume.pdf" className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-slate-900/60 px-5 py-3 font-semibold text-white transition hover:border-cyan-400/60 hover:bg-slate-800">
                   <Download size={16} />
                   Download Resume
                 </a>
-              </div>
+              </motion.div>
 
-              <div className="mt-8 flex flex-wrap items-center gap-3">
+              <motion.div variants={heroItemVariants} className="mt-8 flex flex-wrap items-center gap-3">
                 <a href={profile.github} target="_blank" rel="noreferrer" aria-label="Open Chirag's GitHub profile" className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-slate-900/60 p-3 text-slate-100 transition hover:border-cyan-400/60 hover:bg-cyan-500/5 hover:text-cyan-200">
                   <Globe size={18} />
                   GitHub
@@ -421,9 +480,9 @@ function App() {
                   <Code2 size={18} />
                   LeetCode
                 </a>
-              </div>
+              </motion.div>
 
-              <div className="mt-10 grid max-w-xl gap-3 sm:grid-cols-3">
+              <motion.div variants={heroItemVariants} className="mt-10 grid max-w-xl gap-3 sm:grid-cols-3">
                 <div className="floating-card rounded-2xl border border-white/10 bg-slate-900/35 p-3">
                   <div className="text-[10px] uppercase tracking-[0.2em] text-slate-400">Focus</div>
                   <div className="mt-2 text-lg font-semibold text-white">Web Dev</div>
@@ -436,18 +495,18 @@ function App() {
                   <div className="text-[10px] uppercase tracking-[0.2em] text-slate-400">Location</div>
                   <div className="mt-2 text-lg font-semibold text-white">Bhopal</div>
                 </div>
-              </div>
+              </motion.div>
             </motion.div>
 
-            <div className="flex items-center justify-center">
+            <motion.div initial={{ opacity: 0, scale: 0.96, y: 14 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.35, ease: [0.22, 1, 0.36, 1] }} className="flex items-center justify-center">
               <div className="profile-image-frame max-w-[340px] sm:max-w-[380px]">
                 <img src={profile.image} alt="Portrait of Chirag Chhirauliya" />
               </div>
-            </div>
+            </motion.div>
           </div>
         </section>
 
-        <section id="about" className="relative z-10 mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+        <motion.section {...revealUp} id="about" className="relative z-10 mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
           <div className="about-content mx-auto max-w-5xl">
             <div className="mb-8 text-sm font-semibold uppercase tracking-[0.2em] text-cyan-300">About me</div>
             <motion.h2
@@ -505,7 +564,7 @@ function App() {
               </ul>
             </div>
           </div>
-        </section>
+        </motion.section>
 
         <motion.section {...revealUp} id="skills" className="relative z-10 bg-slate-950/70 py-16">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -517,6 +576,10 @@ function App() {
             <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
               {skillGroups.map((group, index) => {
                 const Icon = iconMap[group.icon as keyof typeof iconMap] || Code2
+                const certificates = group.items.flatMap((item) => {
+                  const certificate = skillCertificates[item]
+                  return certificate ? [{ ...certificate, item }] : []
+                })
 
                 return (
                   <motion.div
@@ -525,7 +588,7 @@ function App() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, amount: 0.15 }}
                     transition={{ duration: 0.45, delay: index * 0.08 }}
-                    whileHover={{ y: -4 }}
+                    whileHover={{ y: -4, scale: 1.01 }}
                     className="rounded-3xl border border-white/10 bg-gradient-to-br from-slate-900 to-slate-900/80 p-5 shadow-[0_15px_35px_rgba(15,23,42,0.35)]"
                   >
                     <div className="mb-4 flex items-center gap-3 text-cyan-300">
@@ -542,6 +605,16 @@ function App() {
                         </span>
                       ))}
                     </div>
+                    {certificates.length > 0 && (
+                      <ul className="mt-4 space-y-2 border-t border-white/10 pt-3" aria-label={`${group.title} certificates`}>
+                        {certificates.map((certificate) => (
+                          <li key={certificate.item} className="flex flex-wrap items-center justify-between gap-2">
+                            <span className="text-xs font-medium text-slate-300">{certificate.label}</span>
+                            <CertificateAction url={certificate.url} />
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </motion.div>
                 )
               })}
@@ -573,7 +646,7 @@ function App() {
 
           <div className="grid gap-6 xl:grid-cols-3">
             {visibleProjects.map((project, index) => (
-              <motion.article key={project.title} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.15 }} whileHover={{ y: -6, scale: 1.005 }} transition={{ duration: 0.45, delay: index * 0.08, type: 'spring', stiffness: 220, damping: 20 }} className="group overflow-hidden rounded-[28px] border border-white/10 bg-slate-900/70 shadow-[0_15px_40px_rgba(15,23,42,0.6)] transition">
+              <motion.article key={project.title} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.15 }} whileHover={{ y: -4, scale: 1.01 }} transition={{ duration: 0.45, delay: index * 0.08, type: 'spring', stiffness: 220, damping: 20 }} className="group overflow-hidden rounded-[28px] border border-white/10 bg-slate-900/70 shadow-[0_15px_40px_rgba(15,23,42,0.6)] transition">
                 <div className="relative aspect-[16/9] overflow-hidden border-b border-white/10">
                   <img src={project.image} alt={project.imageAlt} loading="lazy" decoding="async" className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]" />
                 </div>
@@ -611,7 +684,7 @@ function App() {
 
         <motion.section {...revealUp} id="github" className="relative z-10 bg-slate-950/70 py-16">
           <div className="mx-auto grid max-w-7xl items-stretch gap-6 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
-            <motion.article whileHover={{ y: -4 }} className="social-profile-card flex h-full flex-col rounded-[28px] border border-white/10 bg-slate-900/70 p-7 shadow-[0_20px_50px_rgba(14,116,144,0.2)] sm:p-8">
+            <motion.article whileHover={{ y: -4, scale: 1.01 }} className="social-profile-card flex h-full flex-col rounded-[28px] border border-white/10 bg-slate-900/70 p-7 shadow-[0_20px_50px_rgba(14,116,144,0.2)] sm:p-8">
               <div className="mb-5 flex items-center gap-3 text-sm uppercase tracking-[0.2em] text-cyan-300">
                 <Globe size={20} />
                 GitHub
@@ -626,7 +699,7 @@ function App() {
               </a>
             </motion.article>
 
-            <motion.article id="leetcode" whileHover={{ y: -4 }} className="social-profile-card flex h-full flex-col rounded-[28px] border border-white/10 bg-slate-900/70 p-7 shadow-[0_20px_50px_rgba(14,116,144,0.2)] sm:p-8">
+            <motion.article id="leetcode" whileHover={{ y: -4, scale: 1.01 }} className="social-profile-card flex h-full flex-col rounded-[28px] border border-white/10 bg-slate-900/70 p-7 shadow-[0_20px_50px_rgba(14,116,144,0.2)] sm:p-8">
               <div className="mb-5 flex items-center gap-3 text-sm uppercase tracking-[0.2em] text-violet-300">
                 <Code2 size={20} />
                 LeetCode
@@ -660,7 +733,7 @@ function App() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, amount: 0.15 }}
                     transition={{ duration: 0.45, delay: index * 0.1 }}
-                    whileHover={{ y: -5 }}
+                    whileHover={{ y: -4, scale: 1.01 }}
                     className={`education-card flex h-full flex-col rounded-[24px] border bg-slate-900/70 p-6 shadow-[0_15px_40px_rgba(15,23,42,0.35)] ${isCurrentDegree ? 'education-card-current border-cyan-400/30' : 'border-white/10'}`}
                   >
                     <div className="mb-5 flex items-center justify-between gap-3">
@@ -685,6 +758,9 @@ function App() {
                         ))}
                       </div>
                     )}
+                    <div className="mt-5">
+                      <CertificateAction url={item.certificateUrl} />
+                    </div>
                   </motion.article>
                 )
               })}
@@ -715,7 +791,7 @@ function App() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, amount: 0.12 }}
                     transition={{ duration: 0.45, delay: index * 0.08 }}
-                    whileHover={{ y: -4 }}
+                    whileHover={{ y: -4, scale: 1.01 }}
                     className="experience-card flex h-full flex-col rounded-[24px] border border-white/10 bg-slate-900/70 p-6 shadow-[0_15px_40px_rgba(15,23,42,0.35)] sm:p-7"
                   >
                     <div className="mb-5 flex items-start justify-between gap-4">
@@ -745,6 +821,11 @@ function App() {
                           </li>
                         ))}
                       </ul>
+                    )}
+                    {item.category !== 'Volunteering' && (
+                      <div className="mt-5">
+                        <CertificateAction url={item.certificateUrl} />
+                      </div>
                     )}
                   </motion.article>
                 )
@@ -875,13 +956,15 @@ function App() {
               </label>
 
               <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   type="submit"
                   disabled={formState === 'submitting'}
                   className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-cyan-500 to-violet-600 px-5 py-3 font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-70"
                 >
                   {formState === 'submitting' ? 'Sending...' : 'Send Message'}
-                </button>
+                </motion.button>
 
                 <a href={`mailto:${profile.email}?subject=${encodeURIComponent(formValues.subject || 'Portfolio enquiry')}&body=${encodeURIComponent(formValues.message)}`} className="inline-flex items-center gap-2 text-sm text-cyan-200 hover:text-cyan-100">
                   Use email app

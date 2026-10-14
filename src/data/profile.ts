@@ -42,6 +42,7 @@ export type ExperienceEntry = {
   duration?: string
   description: string
   responsibilities?: string[]
+  certificateUrl?: string
 }
 
 export type EducationDetail = {
@@ -52,6 +53,7 @@ export type EducationDetail = {
   branch?: string
   cgpa?: string
   interests?: string[]
+  certificateUrl?: string
 }
 
 export const profile = {
@@ -111,6 +113,20 @@ export const skillGroups: SkillGroup[] = [
     items: ['Git', 'GitHub', 'Visual Studio Code'],
   },
 ]
+
+export const skillCertificates: Record<string, { label: string; url?: string }> = {
+  C: { label: 'C' },
+  'C++': { label: 'C++' },
+  Python: {
+    label: 'Python',
+    url: 'https://drive.google.com/file/d/1lDiQOTb4uhY3bRqIEsfVYSXbgZ-Oh25J/view?usp=drivesdk',
+  },
+  'Data Structures and Algorithms': { label: 'Data Structures' },
+  JavaScript: {
+    label: 'JavaScript',
+    url: 'https://drive.google.com/file/d/1daiQk76yqvNgbMIFsIucYfSa-BD8UDSk/view?usp=drivesdk',
+  },
+}
 
 export const education: EducationDetail[] = [
   {
@@ -205,6 +221,7 @@ export const experiences: ExperienceEntry[] = [
     organization: 'National-level participation',
     description:
       'Participated once at the national level, with a strong interest in problem-solving, innovation, collaboration, and teamwork.',
+    certificateUrl: 'https://drive.google.com/file/d/1VSn_jiNjHsEkiepfDeWeS9Bmo4OSP_q5/view?usp=drivesdk',
   },
   {
     category: 'Hackathon',
@@ -212,6 +229,7 @@ export const experiences: ExperienceEntry[] = [
     organization: 'National-level participation · Vision 2047 Viksit Bharat',
     description:
       'Participated with a JAN SEVA project concept focused on citizen empowerment and public-service improvement.',
+    certificateUrl: 'https://drive.google.com/file/d/1NkN2oA39-nnEN62jtP7UYkuZYSELQFd0/view?usp=drivesdk',
   },
   {
     category: 'Internship',
@@ -219,6 +237,7 @@ export const experiences: ExperienceEntry[] = [
     organization: 'Apex Planet Software Pvt. Ltd.',
     duration: 'November 2025 – December 2025',
     description: 'Contributed to web development work with guidance from internship mentors.',
+    certificateUrl: 'https://drive.google.com/file/d/1fiS0uAPl7P4n5CgqUDvRWO5NnN3tb0Ji/view?usp=drivesdk',
     responsibilities: [
       'Designed and developed web pages using HTML, CSS, and JavaScript.',
       'Implemented responsive layouts and improved website functionality.',
