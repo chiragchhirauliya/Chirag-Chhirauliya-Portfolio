@@ -25,7 +25,6 @@ import {
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { achievements, education, experiences, navItems, profile, projects, skillCertificates, skillGroups, socialLinks } from './data/profile'
 
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api'
 const localResumeUrl = profile.resumeLocal
 const fallbackResumeUrl = profile.resumeGoogle
 const sectionInView = (id: string) => {
@@ -211,7 +210,7 @@ function App() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [selectedProject, setSelectedProject] = useState<(typeof projects)[number] | null>(null)
   const [projectFilter, setProjectFilter] = useState('All')
-  const [formState, setFormState] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle')
+  const [formState, setFormState] = useState<'idle' | 'success' | 'error'>('idle')
   const [formFeedback, setFormFeedback] = useState('')
   const [formValues, setFormValues] = useState({
     name: '',
@@ -293,28 +292,11 @@ function App() {
       return
     }
 
-    setFormState('submitting')
-    setFormFeedback('Sending your message...')
-
-    try {
-      const response = await fetch(`${apiBaseUrl}/contact`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(trimmed),
-      })
-      const payload = await response.json()
-
-      if (!response.ok) {
-        throw new Error(payload.message || 'Unable to send the message right now.')
-      }
-
-      setFormState('success')
-      setFormFeedback(payload.message || 'Message sent successfully. I will get back to you shortly.')
-      setFormValues({ name: '', email: '', subject: '', message: '' })
-    } catch (error) {
-      setFormState('error')
-      setFormFeedback(error instanceof Error ? error.message : 'There was a problem sending your message.')
-    }
+    const body = `Name: ${trimmed.name}\nEmail: ${trimmed.email}\n\n${trimmed.message}`
+    const mailtoUrl = `mailto:${profile.email}?subject=${encodeURIComponent(trimmed.subject)}&body=${encodeURIComponent(body)}`
+    setFormState('success')
+    setFormFeedback('Opening your email app with this message. Review and send it there.')
+    window.location.href = mailtoUrl
   }
 
   const visibleProjects = filteredProjects
@@ -960,10 +942,9 @@ function App() {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   type="submit"
-                  disabled={formState === 'submitting'}
                   className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-cyan-500 to-violet-600 px-5 py-3 font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-70"
                 >
-                  {formState === 'submitting' ? 'Sending...' : 'Send Message'}
+                  Send Message
                 </motion.button>
 
                 <a href={`mailto:${profile.email}?subject=${encodeURIComponent(formValues.subject || 'Portfolio enquiry')}&body=${encodeURIComponent(formValues.message)}`} className="inline-flex items-center gap-2 text-sm text-cyan-200 hover:text-cyan-100">

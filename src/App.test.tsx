@@ -1,61 +1,11 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import App from './App'
 
 describe('App', () => {
   beforeEach(() => {
     document.documentElement.dataset.theme = 'dark'
     window.localStorage.clear()
-    vi.stubGlobal(
-      'fetch',
-      vi.fn((url: string) =>
-        Promise.resolve({
-          ok: true,
-          json: async () => {
-            if (url.includes('/github')) {
-              return {
-                username: 'chiragchhirauliya',
-                profileUrl: 'https://github.com/chiragchhirauliya',
-                repositoryCount: 1,
-                repositories: [
-                  {
-                    name: 'portfolio',
-                    description: 'Portfolio repository',
-                    html_url: 'https://github.com/chiragchhirauliya/portfolio',
-                    stargazers_count: 2,
-                    forks_count: 1,
-                    language: 'TypeScript',
-                    updated_at: new Date().toISOString(),
-                    created_at: new Date().toISOString(),
-                  },
-                ],
-                lastUpdated: new Date().toISOString(),
-              }
-            }
-
-            if (url.includes('/leetcode')) {
-              return {
-                success: true,
-                stats: {
-                  totalSolved: 150,
-                  easySolved: 65,
-                  mediumSolved: 70,
-                  hardSolved: 15,
-                  acceptanceRate: 72,
-                },
-                lastUpdated: new Date().toISOString(),
-              }
-            }
-
-            if (url.includes('/contact')) {
-              return { success: true, message: 'Message sent successfully.' }
-            }
-
-            return {}
-          },
-        }),
-      ),
-    )
   })
 
   it('renders the hero heading and intro copy', async () => {
@@ -176,5 +126,13 @@ describe('App', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Switch to dark mode' }))
     expect(document.documentElement.dataset.theme).toBe('dark')
     expect(window.localStorage.getItem('portfolio-theme')).toBe('dark')
+  })
+
+  it('validates the contact form locally without a backend', () => {
+    render(<App />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Send Message' }))
+
+    expect(screen.getByText('Please fill in all the fields before submitting.')).toBeInTheDocument()
   })
 })
